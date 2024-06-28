@@ -1,5 +1,12 @@
+from src.exceptions import ExitException
+from src.interface import print_menu, MENU_1
+
+
 def main():
-    pass
+    print_menu(MENU_1)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except ExitException:
+        print("Работа завершена.")
