@@ -1,45 +1,47 @@
-from abc import ABC, abstractmethod
-
 import requests
 
+from src.interface import UserQuery
 from src.settings import SEARCH_PER_PAGE, SEARCH_PAGE
 
 
-class MainAPI(ABC):
-    """
-    Обяжем создавать метод со дним названием для получения JSON
-    из разных ресурсов
-    """
-
-    @abstractmethod
-    def load_vacancies(self, *args, **kwargs):
-        pass
-
-
-class HeadHunterAPI(MainAPI):
+class HeadHunterAPI:
     """
     Класс для получения списка вакансий с ресурса НН
     """
+
     def __init__(self, url):
         self.url = url
         self.headers = {'User-Agent': 'HH-User-Agent'}
         self.params = {'text': '', 'page': 0, 'per_page': SEARCH_PER_PAGE}
 
-    def load_vacancies(self, user_query):
+    def load_employers(self, user_query: UserQuery) -> list:
         """
         Получаем список вакансий в виде словаря
         :param user_query: пользовательский запрос
         'user_query' - текст запроса
         :return:
         """
-        self.params['text'] = user_query
-        vacancies = {}
+        keywords = user_query.filter_words
+        employers = []
+        self.params['only_with_vacancies'] = True
+        for keyword in keywords:
+            self.params['text'] = keyword
+            self.params['page'] = 0
+            self.params['sort_by'] = 'by_vacancies_open'
+            employers.extend(self.load_json_from_hh())
+
+        return employers
+
+    def load_json_from_hh(self) -> list:
+        all_items = []
         while self.params.get('page') != SEARCH_PAGE:
             response = requests.get(self.url, headers=self.headers, params=self.params)
-            vacancies = response.json()['items']
-            vacancies.extend(vacancies)
+            items = response.json()['items']
+            if not items:
+                break
+            all_items.extend(items)
             self.params['page'] += 1
-        return vacancies
+        return all_items
 
 
 class Currency:
