@@ -19,11 +19,13 @@ class UserQuery:
     last_user_query = {}
 
     def __init__(self):
-        print("Поиск вакансий. Для выхода из программы в любой момент введите: exit")
+        print("Поиск вакансий. Для выхода из программы в любой момент введите: /exit")
 
         self.__top_n = self.input_top_n()
         self.__filter_words = self.input_filter_words()
         self.__is_rewrite = self.input_is_rewrite()
+
+        self.remember_query()
 
     @property
     def top_n(self):
@@ -48,20 +50,19 @@ class UserQuery:
         if prompt_last_query is not None and len(prompt_last_query) > 0:
             print(f"предыдущий запрос '{prompt_last_query}'")
         user_input = input()
-        if user_input.strip(' ').lower() == "exit":
+        if user_input.strip(' ').lower() == "/exit":
             raise ExitException
         return user_input
 
-    @classmethod
-    def remember_query(cls, user_query) -> None:
+    def remember_query(self) -> None:
         """
         запомним данные пользовательского запроса
         :param user_query: UserQuery
         :return:
         """
-        list_ = [x.replace('_UserQuery__', '') for x in user_query.__dict__ if not callable(x)]
+        list_ = [x.replace('_UserQuery__', '') for x in self.__dict__ if not callable(x)]
         for x in list_:
-            cls.last_user_query[x] = getattr(user_query, x)
+            self.last_user_query[x] = getattr(self, x)
 
     def input_is_rewrite(self) -> bool:
         is_rewrite = None
@@ -75,8 +76,8 @@ class UserQuery:
 
     def input_top_n(self) -> int:
         top_n = ''
-        while not top_n.isdigit():
-            top_n = self.input_processing("Введите количество компаний для выбора топ N: ",
+        while not top_n.isdigit() or int(top_n) > 20:
+            top_n = self.input_processing("Введите количество компаний (до 20) для выбора топ N: ",
                                           'top_n')
 
         return int(top_n)
@@ -99,8 +100,8 @@ class UserQuery:
             user_input = input().strip().lower()
             if user_input.isdigit() and 0 < int(user_input) < len_menu:
                 break
-            elif user_input == 'exit':
+            elif user_input == '/exit':
                 raise ExitException
             else:
-                print(f"Введите число от 1 до {len_menu}. 'exit' - для выхода")
+                print(f"Введите число от 1 до {len_menu}. '/exit' - для выхода")
         menu[int(user_input) - 1][1]()

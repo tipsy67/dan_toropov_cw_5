@@ -1,20 +1,16 @@
 from configparser import ConfigParser
+from pprint import pprint
 
 from src.api import HeadHunterAPI
 from src.interface import UserQuery
 from src.settings import URL_EMPLOYERS, DEFAULT_INI, DEFAULT_SECTION
 
 
+
+
+
 def load_top_x():
     print(1)
-
-
-def load_json_employers(user_query: UserQuery) -> list:
-    employers = HeadHunterAPI(URL_EMPLOYERS)
-    text = employers.load_employers(user_query)[:user_query.top_n]
-
-    return text
-
 
 def use_last_query():
     print(3)

@@ -8,39 +8,58 @@ class HeadHunterAPI:
     """
     Класс для получения списка вакансий с ресурса НН
     """
-
+    __slots__ = ['__url', '__headers', '__params']
     def __init__(self, url):
-        self.url = url
-        self.headers = {'User-Agent': 'HH-User-Agent'}
-        self.params = {'text': '', 'page': 0, 'per_page': SEARCH_PER_PAGE}
+        self.__headers = {'User-Agent': 'HH-User-Agent'}
+        self.__url = url
+        self.__params = None
+        self.reset_params()
 
-    def load_employers(self, user_query: UserQuery) -> list:
-        """
-        Получаем список вакансий в виде словаря
-        :param user_query: пользовательский запрос
-        'user_query' - текст запроса
-        :return:
-        """
-        keywords = user_query.filter_words
-        employers = []
-        self.params['only_with_vacancies'] = True
-        for keyword in keywords:
-            self.params['text'] = keyword
-            self.params['page'] = 0
-            self.params['sort_by'] = 'by_vacancies_open'
-            employers.extend(self.load_json_from_hh())
 
-        return employers
+    def reset_params(self):
+        self.__params = {'text': '', 'page': 0, 'per_page': SEARCH_PER_PAGE}
+
+    def set_extended_params(self, dict_):
+        self.reset_params()
+        if dict_ is not None:
+            self.dict_to_params(dict_)
+
+    def dict_to_params(self, dict_):
+        for key, value in dict_.items():
+            self.__params[key] = value
+
+    def load_by_params(self, iter_params: [dict], extended_params=None) -> list:
+        self.set_extended_params(extended_params)
+        list_data = []
+        for dict_ in iter_params:
+            self.dict_to_params(dict_)
+            self.__params['page'] = 0
+            list_data.extend(self.load_json_from_hh())
+
+        return list_data
+
+
+    def load_by_urls(self, list_url: list, extended_params=None) -> list:
+        self.set_extended_params(extended_params)
+        list_data = []
+        for url in list_url:
+            self.__url = url
+            self.__params['page'] = 0
+            list_data.extend(self.load_json_from_hh())
+
+        return list_data
+
 
     def load_json_from_hh(self) -> list:
         all_items = []
-        while self.params.get('page') != SEARCH_PAGE:
-            response = requests.get(self.url, headers=self.headers, params=self.params)
+        while self.__params.get('page') != SEARCH_PAGE:
+            response = requests.get(self.__url, headers=self.__headers, params=self.__params)
             items = response.json()['items']
             if not items:
                 break
             all_items.extend(items)
-            self.params['page'] += 1
+            self.__params['page'] += 1
+
         return all_items
 
 
