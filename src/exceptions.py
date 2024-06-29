@@ -1,2 +1,3 @@
 class ExitException(Exception):
     pass
+

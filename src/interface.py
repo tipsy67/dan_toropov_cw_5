@@ -1,10 +1,6 @@
 
 from src.exceptions import ExitException
 
-MENU_1 = (('Заполнить БД ',),
-          ('Использовать предыдущий запрос', ))
-
-
 class UserQuery:
     """
     Класс для формирования пользовательского запроса:
@@ -47,7 +43,7 @@ class UserQuery:
         """
         print(message)
         prompt_last_query = cls.last_user_query.get(key)
-        if prompt_last_query is not None and len(prompt_last_query) > 0:
+        if prompt_last_query is not None and len(str(prompt_last_query)) > 0:
             print(f"предыдущий запрос '{prompt_last_query}'")
         user_input = input()
         if user_input.strip(' ').lower() == "/exit":
@@ -98,7 +94,7 @@ class UserQuery:
             print(f'{index + 1}. {item[0]}')
         while True:
             user_input = input().strip().lower()
-            if user_input.isdigit() and 0 < int(user_input) < len_menu:
+            if user_input.isdigit() and 0 < int(user_input) <= len_menu:
                 break
             elif user_input == '/exit':
                 raise ExitException

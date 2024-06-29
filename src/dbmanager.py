@@ -70,11 +70,8 @@ class DBManager:
         s_str = ','.join(['%s'] * count_columns)
         with self.__conn.cursor() as cur:
             args_str = ','.join(cur.mogrify(f"({s_str})", tuple(x.values())).decode('utf-8') for x in data)
-            try:
-                cur.execute(f"INSERT INTO {table}({columns}) "
-                            f"VALUES" + args_str)
-            except psycopg2.Error:
-                print(f"Ошибка записи в базу. Попробуйте очищать БД перед запросом.")
+            cur.execute(f"INSERT INTO {table}({columns}) "
+                        f"VALUES" + args_str)
 
     def get_companies_and_vacancies_count(self):
         """получает список всех компаний и количество вакансий
@@ -98,7 +95,7 @@ class DBManager:
     def get_vacancies_with_keyword(self):
         """получает список всех вакансий, в названии которых
         содержатся переданные в метод слова, например python."""
-        pass
+        print('keyword')
 
     @staticmethod
     def refactor_employers_data(data_emp: [dict]) -> [dict]:
