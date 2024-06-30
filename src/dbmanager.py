@@ -48,7 +48,7 @@ class DBManager:
 
             cur.execute("CREATE TABLE IF NOT EXISTS vacancies("
                         "id SERIAL PRIMARY KEY,"
-                        "employer_id INT REFERENCES employers(id),"
+                        "employer_id INT REFERENCES employers(id) ON DELETE CASCADE,"
                         "name VARCHAR(100),"
                         "salary_min INT,"
                         "salary_max INT,"
@@ -73,24 +73,74 @@ class DBManager:
             cur.execute(f"INSERT INTO {table}({columns}) "
                         f"VALUES" + args_str)
 
+    def query_and_return(self, query: str) -> [tuple]:
+        with self.__conn.cursor() as cur:
+            cur.execute(query)
+            data_from_db = cur.fetchall()
+
+        return data_from_db
+
+    def query_to_db(self, query: str) -> None:
+        with self.__conn.cursor() as cur:
+            cur.execute(query)
+
+    def select_and_print(self, query: str, title: tuple):
+        print()
+        data_from_db = self.query_and_return(query)
+        for name_column in title:
+            print(' ' * 5 + name_column, end='')
+        print()
+        print('-' * 50)
+        for row in data_from_db:
+            print(*row)
+
+    def del_by_id(self, data: list):
+        query = ("DELETE FROM employers "
+                 "WHERE id = " + ' OR id = '.join(data))
+        self.query_to_db(query)
+
+    def del_by_words(self, data: list):
+        query = ("DELETE FROM employers "
+                 "WHERE LOWER(name) LIKE '%" + "%' OR LOWER(name) LIKE '%".join(data) + "%'")
+        self.query_to_db(query)
+
     def get_companies_and_vacancies_count(self):
         """получает список всех компаний и количество вакансий
            у каждой компании."""
-        pass
+        query = "SELECT id, name, open_vacancies, url FROM employers"
+        title = ('id', 'name', 'open_vacancies', 'url')
+        self.select_and_print(query, title)
 
     def get_all_vacancies(self):
         """получает список всех вакансий с указанием названия
         компании, названия вакансии и зарплаты и ссылки на вакансию."""
-        pass
+        query = ("SELECT e.id, e.name, v.name, v.salary_min, v.salary_max, v_url"
+                 "FROM employers AS e"
+                 "JOIN vacancies AS v"
+                 "ON e.id = v.employer.id")
+        title = ('id', 'company', 'vacancy', 'salary_min', 'salary_max', 'url')
+        self.select_and_print(query, title)
 
-    def get_avg_salary(self):
+    def get_avg_salary(self) -> int | float:
         """получает среднюю зарплату по вакансиям"""
-        pass
+        query = ("SELECT SUM("
+                 "CASE WHEN salary_min = 0 THEN salary_max ELSE salary_min END+"
+                 "CASE WHEN salary_max = 0 THEN salary_min ELSE salary_max END"
+                 ")/2 AS sum_,"
+                 "COUNT(*) AS all_ "
+                 "FROM vacancies")
+        data_from_db = self.query_and_return(query)
+        sum_, all_ = data_from_db[0][0], data_from_db[0][1]
+        if not all_:
+            print("Запрос вернул 0")
+            return 0
+        return sum_ / all_
 
     def get_vacancies_with_higher_salary(self):
         """получает список всех вакансий, у которых зарплата выше
         средней по всем вакансиям."""
-        pass
+        avg_salary = self.get_avg_salary()
+        print(avg_salary)
 
     def get_vacancies_with_keyword(self):
         """получает список всех вакансий, в названии которых
