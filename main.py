@@ -8,7 +8,8 @@ from src.exceptions import ExitException
 from src.interface import UserQuery
 from src.settings import URL_EMPLOYERS, URL_CURRENCY
 
-from src.utils import read_config
+from src.utils import read_config, get_companies, get_all_vacancies, get_vacancies_with_higher_salary, \
+    get_vacancies_with_keyword
 
 
 def main():
@@ -39,7 +40,7 @@ def main():
             data_emp = dbm.refactor_employers_data(data_emp)
             dbm.add_data('employers', data_emp)
         except psycopg2.Error:
-            print(f"Ошибка записи в базу. Попробуйте очищать БД перед запросом.")
+            print(f"Ошибка записи в базу. Для избежания дублей попробуйте очищать БД перед запросом.")
         else:
             data_vac = dbm.refactor_vacancies_data(data_vac)
             dbm.add_data('vacancies', data_vac)
@@ -47,15 +48,15 @@ def main():
         try:
             while True:
                 menu = (
-                    ("Cписок всех компаний", dbm.get_companies_and_vacancies_count),
-                    ("Cписок всех вакансий", dbm.get_all_vacancies),
-                    ("Cредняя зарплата по всем вакансиям", dbm.get_avg_salary),
+                    ("Cписок всех компаний", get_companies, (dbm, user_query)),
+                    ("Cписок всех вакансий", get_all_vacancies, (dbm, user_query)),
                     ("Cписок всех вакансий, у которых "
-                     "зарплата выше средней", dbm.get_vacancies_with_higher_salary),
+                     "зарплата выше средней", get_vacancies_with_higher_salary, (dbm, user_query)),
                     ("Cписок всех вакансий, в названии "
-                     "которых cодержатся ключевые слова", dbm.get_vacancies_with_keyword)
+                     "которых cодержатся ключевые слова", get_vacancies_with_keyword, (dbm, user_query)),
+                    ("Выйти в предыдущее меню", user_query.raise_exit)
                 )
-                UserQuery.print_menu(menu)
+                user_query.print_menu(menu)
         except ExitException:
             pass
 

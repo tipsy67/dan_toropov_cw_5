@@ -78,16 +78,41 @@ class UserQuery:
 
         return int(top_n)
 
+    def input_items(self, text: str, key: str) -> list:
+        items = self.input_processing(text, key).lower().split()
+        items = [x.replace(' ', '') for x in items]
+
+        return items
+
     def input_filter_words(self) -> list[str]:
-        filter_words = self.input_processing("Введите через пробел"
+        filter_words = self.input_items("Введите через пробел"
                                              " ключевые слова для поиска компаний: ",
-                                             'filter_words').lower().split()
-        filter_words = [x.replace(' ', '') for x in filter_words]
+                                             'filter_words')
 
         return filter_words
 
+    def input_id_for_del(self) -> list[int]:
+        id_for_del = self.input_items("Введите через пробел"
+                                     " id компаний для удаления:",
+                                     'defunct_key')
+        id_for_del = [x for x in id_for_del if x.isdigit()]
+
+        return id_for_del
+
+    def input_words_for_del(self) -> list[str]:
+        words_for_del = self.input_items("Введите через пробел ключевые для "
+                                         "поиска компаний и их удаления:",
+                                     'defunct_key')
+
+        return words_for_del
+
+    @staticmethod
+    def raise_exit():
+        raise ExitException
+
     @staticmethod
     def print_menu(menu: tuple):
+        print()
         print("Выберите необходимый пункт меню:")
         len_menu = len(menu)
         for index, item in enumerate(menu):
@@ -100,4 +125,7 @@ class UserQuery:
                 raise ExitException
             else:
                 print(f"Введите число от 1 до {len_menu}. '/exit' - для выхода")
-        menu[int(user_input) - 1][1]()
+        if len(menu[int(user_input) - 1]) > 2:
+            menu[int(user_input) - 1][1](*menu[int(user_input) - 1][2])
+        else:
+            menu[int(user_input) - 1][1]()
