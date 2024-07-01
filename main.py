@@ -1,15 +1,13 @@
-from pprint import pprint
-
 import psycopg2
 
 from src.api import HeadHunterAPI, Currency
 from src.dbmanager import DBManager
-from src.exceptions import ExitException
+from src.exceptions import ExitException, BackMenuException
 from src.interface import UserQuery
-from src.settings import URL_EMPLOYERS, URL_CURRENCY
-
-from src.utils import read_config, get_companies, get_all_vacancies, get_vacancies_with_higher_salary, \
+from src.menu import get_companies, get_all_vacancies, get_vacancies_with_higher_salary, \
     get_vacancies_with_keyword
+from src.settings import URL_EMPLOYERS, URL_CURRENCY
+from src.utils import read_config
 
 
 def main():
@@ -20,7 +18,9 @@ def main():
     print("Немного подождите, загружаем информацию о компаниях...")
     extend_params = {'sort_by': 'by_vacancies_open', 'only_with_vacancies': True}
     iter_params = [{'text': x} for x in user_query.filter_words]
-    data_emp = data_from_hh.load_by_params(iter_params, extend_params)[:user_query.top_n]
+    data_emp = data_from_hh.load_by_params(iter_params, extend_params)
+    data_emp = sorted(data_emp, key=lambda x: x['open_vacancies'], reverse=True)
+    data_emp = data_emp[:user_query.top_n]
 
     print("Загружаем вакансии найденных компаний...")
     extend_params = {'only_with_salary': True}
@@ -54,10 +54,10 @@ def main():
                      "зарплата выше средней", get_vacancies_with_higher_salary, (dbm, user_query)),
                     ("Cписок всех вакансий, в названии "
                      "которых cодержатся ключевые слова", get_vacancies_with_keyword, (dbm, user_query)),
-                    ("Выйти в предыдущее меню", user_query.raise_exit)
+                    ("Выйти в предыдущее меню", user_query.raise_back_menu)
                 )
                 user_query.print_menu(menu)
-        except ExitException:
+        except BackMenuException:
             pass
 
 

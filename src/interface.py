@@ -1,5 +1,5 @@
+from src.exceptions import ExitException, BackMenuException
 
-from src.exceptions import ExitException
 
 class UserQuery:
     """
@@ -20,6 +20,7 @@ class UserQuery:
         self.__top_n = self.input_top_n()
         self.__filter_words = self.input_filter_words()
         self.__is_rewrite = self.input_is_rewrite()
+        self.__keywords = None
 
         self.remember_query()
 
@@ -34,6 +35,10 @@ class UserQuery:
     @property
     def is_rewrite(self):
         return self.__is_rewrite
+
+    @property
+    def keywords(self):
+        return self.__keywords
 
     @classmethod
     def input_processing(cls, message, key) -> str:
@@ -53,8 +58,6 @@ class UserQuery:
     def remember_query(self) -> None:
         """
         запомним данные пользовательского запроса
-        :param user_query: UserQuery
-        :return:
         """
         list_ = [x.replace('_UserQuery__', '') for x in self.__dict__ if not callable(x)]
         for x in list_:
@@ -79,36 +82,54 @@ class UserQuery:
         return int(top_n)
 
     def input_items(self, text: str, key: str) -> list:
-        items = self.input_processing(text, key).lower().split()
-        items = [x.replace(' ', '') for x in items]
+        items = []
+        while not (len(items) > 0):
+            items = self.input_processing(text, key).lower().split()
+            items = [x.replace(' ', '') for x in items]
 
         return items
 
     def input_filter_words(self) -> list[str]:
         filter_words = self.input_items("Введите через пробел"
-                                             " ключевые слова для поиска компаний: ",
-                                             'filter_words')
+                                        " ключевые слова для поиска компаний: ",
+                                        'filter_words')
 
         return filter_words
 
     def input_id_for_del(self) -> list[int]:
-        id_for_del = self.input_items("Введите через пробел"
-                                     " id компаний для удаления:",
-                                     'defunct_key')
-        id_for_del = [x for x in id_for_del if x.isdigit()]
+        id_for_del = []
+        while not (len(id_for_del) > 0):
+            id_for_del = self.input_items("Введите через пробел"
+                                          " id для поиска и удаления:",
+                                          'defunct_key')
+            id_for_del = [x for x in id_for_del if x.isdigit()]
 
         return id_for_del
 
     def input_words_for_del(self) -> list[str]:
-        words_for_del = self.input_items("Введите через пробел ключевые для "
-                                         "поиска компаний и их удаления:",
-                                     'defunct_key')
+        words_for_del = self.input_items("Введите через пробел ключевые слова:",
+                                         'defunct_key')
+        self.__keywords = words_for_del
 
         return words_for_del
+
+    def input_range_for_del(self) -> list[str]:
+        range_id = ['', '']
+        while len(range_id) != 2 or not range_id[0].isdigit() or not range_id[1].isdigit():
+            range_id = self.input_processing("Введите диапазон id для удаления через дефис: ",
+                                             'salary_range')
+            if len(range_id) > 0:
+                range_id = range_id.replace(' ', '').split('-')
+
+        return range_id
 
     @staticmethod
     def raise_exit():
         raise ExitException
+
+    @staticmethod
+    def raise_back_menu():
+        raise BackMenuException
 
     @staticmethod
     def print_menu(menu: tuple):

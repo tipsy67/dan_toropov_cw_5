@@ -90,34 +90,42 @@ class DBManager:
         for name_column in title:
             print(' ' * 5 + name_column, end='')
         print()
-        print('-' * 50)
+        print('-' * 80)
         for row in data_from_db:
             print(*row)
 
-    def del_by_id(self, data: list):
-        query = ("DELETE FROM employers "
-                 "WHERE id = " + ' OR id = '.join(data))
+    def del_by_id(self, table_to_delete: str, column_id: str, data: list):
+        query = (f"DELETE FROM {table_to_delete} "
+                 f"WHERE {column_id} = " + f" OR {column_id} = ".join(data))
         self.query_to_db(query)
 
-    def del_by_words(self, data: list):
-        query = ("DELETE FROM employers "
-                 "WHERE LOWER(name) LIKE '%" + "%' OR LOWER(name) LIKE '%".join(data) + "%'")
+    def del_by_range(self, table_to_delete: str, column_id: str, data: list):
+        query = (f"DELETE FROM {table_to_delete} "
+                 f"WHERE {column_id} BETWEEN {data[0]} AND {data[1]}")
+        self.query_to_db(query)
+
+    def del_by_words(self, table_to_delete: str, column_word: str, data: list):
+        query = (f"DELETE FROM {table_to_delete} "
+                 f"WHERE LOWER({column_word}) LIKE '%" + f"%' OR LOWER({column_word}) LIKE '%".join(data) + "%'")
         self.query_to_db(query)
 
     def get_companies_and_vacancies_count(self):
         """получает список всех компаний и количество вакансий
            у каждой компании."""
-        query = "SELECT id, name, open_vacancies, url FROM employers"
-        title = ('id', 'name', 'open_vacancies', 'url')
+        query = ("SELECT e.id, e.name, e.open_vacancies, e.url, COUNT(v.id) FROM employers AS e "
+                 "LEFT JOIN vacancies AS v ON e.id = v.employer_id " 
+                 "GROUP BY e.id")
+        title = ('id', 'name', 'open_vacancies', 'url', 'vacancies_in_base')
         self.select_and_print(query, title)
 
     def get_all_vacancies(self):
         """получает список всех вакансий с указанием названия
         компании, названия вакансии и зарплаты и ссылки на вакансию."""
-        query = ("SELECT e.id, e.name, v.name, v.salary_min, v.salary_max, v_url"
-                 "FROM employers AS e"
-                 "JOIN vacancies AS v"
-                 "ON e.id = v.employer.id")
+        query = ("SELECT v.id, e.name, v.name, v.salary_min, v.salary_max, v.url "
+                 "FROM employers AS e "
+                 "JOIN vacancies AS v "
+                 "ON e.id = v.employer_id "
+                 "ORDER BY v.id")
         title = ('id', 'company', 'vacancy', 'salary_min', 'salary_max', 'url')
         self.select_and_print(query, title)
 
@@ -140,12 +148,45 @@ class DBManager:
         """получает список всех вакансий, у которых зарплата выше
         средней по всем вакансиям."""
         avg_salary = self.get_avg_salary()
-        print(avg_salary)
+        query = ("SELECT v.id, e.name, v.name, v.salary_min, v.salary_max, v.url "
+                 "FROM employers AS e "
+                 "JOIN vacancies AS v "
+                 "ON e.id = v.employer_id "
+                 "WHERE (CASE WHEN salary_min = 0 THEN salary_max ELSE salary_min END+"
+                 "CASE WHEN salary_max = 0 THEN salary_min ELSE salary_max END"
+                 f")/2 > {avg_salary} "
+                 "ORDER BY v.id ")
+        title = ('id', 'company', 'vacancy', 'salary_min', 'salary_max', 'url')
+        self.select_and_print(query, title)
 
-    def get_vacancies_with_keyword(self):
+    def del_vacancies_without_higher_salary(self):
+        """получает список всех вакансий, у которых зарплата выше
+        средней по всем вакансиям."""
+        avg_salary = self.get_avg_salary()
+        query = ("DELETE FROM vacancies "
+                 "WHERE (CASE WHEN salary_min = 0 THEN salary_max ELSE salary_min END+"
+                 "CASE WHEN salary_max = 0 THEN salary_min ELSE salary_max END"
+                 f")/2 <= {avg_salary} ")
+        self.query_to_db(query)
+
+    def get_vacancies_with_keyword(self, data: list):
         """получает список всех вакансий, в названии которых
         содержатся переданные в метод слова, например python."""
-        print('keyword')
+        query = ("SELECT v.id, e.name, v.name, v.salary_min, v.salary_max, v.url "
+                 "FROM employers AS e "
+                 "JOIN vacancies AS v "
+                 "ON e.id = v.employer_id "
+                 f"WHERE LOWER(v.name) LIKE '%" + f"%' OR LOWER(v.name) LIKE '%".join(data) + "%' "
+                 "ORDER BY v.id")
+        title = ('id', 'company', 'vacancy', 'salary_min', 'salary_max', 'url')
+        self.select_and_print(query, title)
+
+    def del_vacancies_without_keyword(self, data: list):
+        """получает список всех вакансий, в названии которых
+        содержатся переданные в метод слова, например python."""
+        query = ("DELETE FROM vacancies "
+                 f"WHERE LOWER(name) NOT LIKE '%" + f"%' AND LOWER(name) NOT LIKE '%".join(data) + "%' ")
+        self.query_to_db(query)
 
     @staticmethod
     def refactor_employers_data(data_emp: [dict]) -> [dict]:
