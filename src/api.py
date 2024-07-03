@@ -16,18 +16,22 @@ class HeadHunterAPI:
         self.reset_params()
 
     def reset_params(self):
+        """Зададим минимально необходимый список параметров для запроса"""
         self.__params = {'text': '', 'page': 0, 'per_page': SEARCH_PER_PAGE}
 
     def set_extended_params(self, dict_):
+        """Создадим новый список параметров запроса"""
         self.reset_params()
         if dict_ is not None:
             self.dict_to_params(dict_)
 
     def dict_to_params(self, dict_):
+        """Заменим\создадим параметры в текущем списке запроса"""
         for key, value in dict_.items():
             self.__params[key] = value
 
     def load_by_params(self, iter_params: [dict], extended_params=None) -> list:
+        """Загрузим данные с НН итерируя параметры"""
         self.set_extended_params(extended_params)
         list_data = []
         for dict_ in iter_params:
@@ -38,6 +42,7 @@ class HeadHunterAPI:
         return list_data
 
     def load_by_urls(self, list_url: list, extended_params=None) -> list:
+        """Загрузим данные с НН итерируя ссылки"""
         self.set_extended_params(extended_params)
         list_data = []
         for url in list_url:
@@ -48,6 +53,7 @@ class HeadHunterAPI:
         return list_data
 
     def load_json_from_hh(self) -> list:
+        """Загрузим данные с НН"""
         all_items = []
         while self.__params.get('page') != SEARCH_PAGE:
             response = requests.get(self.__url, headers=self.__headers, params=self.__params)
@@ -68,10 +74,11 @@ class Currency:
     currency_rate = {}
     is_complete = False
 
-    def __init__(self, user_url):
+    def __init__(self, user_url: str):
         self.user_url = user_url
 
     def update(self):
+        """Загрузим курсы"""
         try:
             Currency.currency_rate = requests.get(self.user_url).json()
         except:

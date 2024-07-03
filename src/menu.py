@@ -7,9 +7,10 @@ from src.interface import UserQuery
 # Пункт меню 1
 def get_companies(dbm: DBManager, user_query: UserQuery):
     menu_1 = (
-        ("Ввести id компаний для удаления их из списка", emloyers_del_by_id, (dbm, user_query)),
-        ("Ввести ключевые слова для поиска в названии и затем удаления их из списка",
-         emloyers_del_by_words, (dbm, user_query)),
+        ("Удалить компании, у которых не осталось вакансий в базе", employers_zero_vac_del, (dbm, user_query)),
+        ("Ввести id компаний для удаления их из списка", employers_del_by_id, (dbm, user_query)),
+        ("Ввести ключевые слова для поиска в названии, а затем удаления их из списка",
+         employers_del_by_words, (dbm, user_query)),
         ("Выйти в предыдущее меню", user_query.raise_back_menu),
     )
     try:
@@ -19,15 +20,19 @@ def get_companies(dbm: DBManager, user_query: UserQuery):
     except BackMenuException:
         pass
 
-
 # Пункт меню 1.1
-def emloyers_del_by_id(dbm: DBManager, user_query: UserQuery):
+def employers_zero_vac_del(dbm: DBManager, user_query: UserQuery):
+    dbm.employers_zero_vac_del()
+
+
+# Пункт меню 1.2
+def employers_del_by_id(dbm: DBManager, user_query: UserQuery):
     list_id = user_query.input_id_for_del()
     dbm.del_by_id('employers', 'id', list_id)
 
 
-# Пункт меню 1.2
-def emloyers_del_by_words(dbm: DBManager, user_query: UserQuery):
+# Пункт меню 1.3
+def employers_del_by_words(dbm: DBManager, user_query: UserQuery):
     list_words = user_query.input_words_for_del()
     dbm.del_by_words('employers', 'name', list_words)
 
@@ -37,7 +42,7 @@ def get_all_vacancies(dbm: DBManager, user_query: UserQuery):
     menu_2 = (
         ("Ввести id вакансий для удаления их из списка", vacancies_del_by_id, (dbm, user_query)),
         ("Ввести диапазон id вакансий для удаления их из списка", vacancies_del_by_range, (dbm, user_query)),
-        ("Ввести ключевые слова для поиска в названии и затем удаления их из списка",
+        ("Ввести ключевые слова для поиска в названии, а затем удаления их из списка",
          vacancies_del_by_words, (dbm, user_query)),
         ("Выйти в предыдущее меню", user_query.raise_back_menu),
     )

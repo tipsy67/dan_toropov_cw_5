@@ -43,7 +43,7 @@ class UserQuery:
     @classmethod
     def input_processing(cls, message, key) -> str:
         """
-        при каждом вводе данных, выводим подсказку если есть данные предыдущего запроса
+        При каждом вводе данных, выводим подсказку если есть данные предыдущего запроса
         и отслеживаем команду выхода из программы
         """
         print(message)
@@ -56,9 +56,7 @@ class UserQuery:
         return user_input
 
     def remember_query(self) -> None:
-        """
-        запомним данные пользовательского запроса
-        """
+        """ Запомним данные пользовательского запроса """
         list_ = [x.replace('_UserQuery__', '') for x in self.__dict__ if not callable(x)]
         for x in list_:
             self.last_user_query[x] = getattr(self, x)
@@ -82,6 +80,7 @@ class UserQuery:
         return int(top_n)
 
     def input_items(self, text: str, key: str) -> list:
+        """Для получения от пользователя списка параметров"""
         items = []
         while not (len(items) > 0):
             items = self.input_processing(text, key).lower().split()
@@ -133,6 +132,11 @@ class UserQuery:
 
     @staticmethod
     def print_menu(menu: tuple):
+        """
+        Для вывода меню на экран и обработки выбора пользователя
+        menu: Кортеж из кортежей вида
+        (текст пункта меню, ссылка на вызываемую функцию, позиционные аргументы для функции)
+        """
         print()
         print("Выберите необходимый пункт меню:")
         len_menu = len(menu)

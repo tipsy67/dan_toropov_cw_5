@@ -6,7 +6,7 @@ from src.exceptions import ExitException, BackMenuException
 from src.interface import UserQuery
 from src.menu import get_companies, get_all_vacancies, get_vacancies_with_higher_salary, \
     get_vacancies_with_keyword
-from src.settings import URL_EMPLOYERS, URL_CURRENCY
+from src.settings import URL_EMPLOYERS, URL_CURRENCY, DEFAULT_DATABASE
 from src.utils import read_config
 
 
@@ -27,13 +27,17 @@ def main():
     list_urls = [x['vacancies_url'] for x in data_emp]
     data_vac = data_from_hh.load_by_urls(list_urls, extend_params)
 
+    if not data_emp or not data_vac:
+        print("Ваш запрос ничего не нашел. Попробуйте еще раз.\n")
+        return None
+
     print("Заполняем базу данных найденной информацией...")
     params_db = read_config()
     dbmanager = DBManager(params_db)
     with dbmanager as dbm:
         if user_query.is_rewrite:
-            dbm.drop_database()
-        dbm.create_database()
+            dbm.drop_database(DEFAULT_DATABASE)
+        dbm.create_database(DEFAULT_DATABASE)
         dbm.create_tables()
 
         try:
