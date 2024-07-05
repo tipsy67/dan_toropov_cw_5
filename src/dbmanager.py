@@ -12,32 +12,53 @@ class SuperDBManager:
         self._params = params
 
     def __enter__(self):
-        self.__new_connect()
+        self._new_connect()
         return self
 
-    def __new_connect(self):
+    def _new_connect(self):
         self._conn = psycopg2.connect(**self._params)
         self._conn.autocommit = True
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._conn.close()
 
-    def drop_database(self, database: str):
+    def if_db_not_exists(self, database: str) -> bool:
+        """Проверим существует ли БД"""
+        with self._conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) = 0 FROM pg_catalog.pg_database "
+                        f"WHERE datname = '{database}'")
+            db_exists, = cur.fetchone()
+        return db_exists
+
+    def if_table_not_exists(self, table: str) -> bool:
+        with self._conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) = 0 FROM information_schema.tables "
+                        f"WHERE table_name = '{table}'")
+            table_exists, = cur.fetchone()
+        return table_exists
+
+    def drop_all_connection(self, database) -> None:
+        """Закроем все соединения к БД кроме текущего"""
+        with self._conn.cursor() as cur:
+            cur.execute("SELECT pg_terminate_backend(pg_stat_activity.pid) "
+                        "FROM pg_stat_activity "
+                        f"WHERE pg_stat_activity.datname = '{database}' "
+                        "AND pid <> pg_backend_pid()")
+
+    def drop_database(self, database: str) -> None:
         """Удалим существующую БД если есть"""
         with self._conn.cursor() as cur:
             cur.execute(f"DROP DATABASE IF EXISTS {database} WITH (FORCE)")
 
     def create_database(self, database: str):
         """Создадим новую БД если ее нет и сделаем реконнект к ней"""
-        with self._conn.cursor() as cur:
-            cur.execute(f"SELECT COUNT(*) = 0 FROM pg_catalog.pg_database "
-                        f"WHERE datname = '{database}'")
-            not_exists, = cur.fetchone()
-            if not_exists:
+        not_exists = self.if_db_not_exists(database)
+        if not_exists:
+            with self._conn.cursor() as cur:
                 cur.execute(f"CREATE DATABASE {database}")
         self._conn.close()
         self._params['dbname'] = database
-        self.__new_connect()
+        self._new_connect()
 
     def add_data(self, table: str, data: [dict]):
         """

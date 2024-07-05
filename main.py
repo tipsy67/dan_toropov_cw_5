@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import psycopg2
 
 from src.api import HeadHunterAPI, Currency
@@ -42,6 +44,7 @@ def main():
 
         try:
             data_emp = dbm.refactor_employers_data(data_emp)
+            pprint(data_emp)
             dbm.add_data('employers', data_emp)
         except psycopg2.Error:
             print(f"Ошибка записи в базу. Для избежания дублей попробуйте очищать БД перед запросом.")
