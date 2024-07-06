@@ -39,3 +39,16 @@ def dbm_test(dbmanager_test):
         dbm_test._params['dbname'] = 'postgres'
         dbm_test._new_connect()
         dbm_test.drop_database('test_base')
+
+@pytest.fixture
+def dbm_test_data(dbmanager_test, test_employer, test_vacancy):
+    with dbmanager_test as dbm_test:
+        dbm_test.create_database('test_base')
+        dbm_test.create_tables()
+        dbm_test.add_data('employers', test_employer)
+        dbm_test.add_data('vacancies', test_vacancy)
+        yield dbm_test
+        dbm_test._conn.close()
+        dbm_test._params['dbname'] = 'postgres'
+        dbm_test._new_connect()
+        dbm_test.drop_database('test_base')
