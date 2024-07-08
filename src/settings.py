@@ -16,4 +16,3 @@ DEFAULT_SECTION = 'postgres1'
 
 # Что удалять из полученного с удаленного ресурса JSON файла
 TAGS_FOR_REMOVE = {'<highlighttext>', '</highlighttext>'}
-

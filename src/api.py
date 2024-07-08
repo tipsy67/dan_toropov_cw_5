@@ -26,7 +26,7 @@ class HeadHunterAPI:
             self.dict_to_params(dict_)
 
     def dict_to_params(self, dict_):
-        """Заменим\создадим параметры в текущем списке запроса"""
+        """Заменим/создадим параметры в текущем списке запроса"""
         for key, value in dict_.items():
             self.__params[key] = value
 

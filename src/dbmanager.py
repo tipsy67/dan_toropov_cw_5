@@ -226,7 +226,6 @@ class DBManager(SuperDBManager):
                  f"WHERE e.id IN (SELECT cte.id FROM cte WHERE cte.quantity = 0)")
         self.query_to_db(query)
 
-
     @staticmethod
     def refactor_employers_data(data_emp: [dict]) -> [dict]:
         """Преобразуем данные о компаниях с НН для последущей записи в БД"""

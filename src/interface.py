@@ -1,4 +1,4 @@
-from src.exceptions import ExitException, BackMenuException
+from src.exceptions import ExitException
 
 
 class UserQuery:
@@ -121,4 +121,3 @@ class UserQuery:
                 range_id = range_id.replace(' ', '').split('-')
 
         return range_id
-

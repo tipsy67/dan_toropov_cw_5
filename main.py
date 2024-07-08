@@ -1,5 +1,3 @@
-from pprint import pprint
-
 import psycopg2
 
 from src.api import HeadHunterAPI, Currency
