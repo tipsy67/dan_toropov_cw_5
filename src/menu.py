@@ -5,12 +5,9 @@ from src.interface import UserQuery
 
 class SuperMenu:
     """Класс для создания текстовых меню"""
-    dbm: DBManager
-    user_query: UserQuery
 
-    def __init__(self, dbm, user_query):
-        self.dbm = dbm
-        self.user_query = user_query
+    def __init__(self):
+        pass
 
     def raise_exit(self):
         """Генерация исключения для выхода из программы"""
@@ -47,6 +44,16 @@ class SuperMenu:
 
 class ProjectMenu(SuperMenu):
     """Меню для работы с БД"""
+    __slots__ = ['dbm', 'user_query',]
+
+    dbm: DBManager
+    user_query: UserQuery
+
+    def __init__(self, dbm, user_query):
+        super().__init__()
+        self.dbm = dbm
+        self.user_query = user_query
+
     def main_menu(self):
         """
         Главное меню
@@ -65,6 +72,7 @@ class ProjectMenu(SuperMenu):
     def get_companies(self):
         """
         Пункт меню 1
+        ______________________
         """
         menu_1 = (
             ("Удалить компании, у которых не осталось вакансий в базе", self.employers_zero_vac_del),
@@ -103,6 +111,7 @@ class ProjectMenu(SuperMenu):
     def get_all_vacancies(self):
         """
         Пункт меню 2
+        ______________________
         """
         menu_2 = (
             ("Ввести id вакансий для удаления их из списка", self.vacancies_del_by_id),
@@ -142,6 +151,7 @@ class ProjectMenu(SuperMenu):
     def get_vacancies_with_higher_salary(self):
         """
         Пункт меню 3
+        ______________________
         """
         menu_3 = (
             ("Удалить вакансии, не вошедшие в список", self.del_vacancies_without_higher_salary),
@@ -164,6 +174,7 @@ class ProjectMenu(SuperMenu):
     def get_vacancies_with_keyword(self):
         """
         Пункт меню 4
+        ______________________
         """
         menu_4 = (
             ("Удалить вакансии, не вошедшие в список", self.del_vacancies_without_keyword),
