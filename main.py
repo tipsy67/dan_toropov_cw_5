@@ -1,12 +1,13 @@
+from pprint import pprint
+
 import psycopg2
 
 from src.api import HeadHunterAPI, Currency
 from src.dbmanager import DBManager
 from src.exceptions import ExitException, BackMenuException
 from src.interface import UserQuery
-from src.menu import get_companies, get_all_vacancies, get_vacancies_with_higher_salary, \
-    get_vacancies_with_keyword
-from src.settings import URL_EMPLOYERS, URL_CURRENCY
+from src.menu import ProjectMenu
+from src.settings import URL_EMPLOYERS, URL_CURRENCY, DEFAULT_DATABASE
 from src.utils import read_config
 
 
@@ -27,13 +28,17 @@ def main():
     list_urls = [x['vacancies_url'] for x in data_emp]
     data_vac = data_from_hh.load_by_urls(list_urls, extend_params)
 
+    if not data_emp or not data_vac:
+        print("Ваш запрос ничего не нашел. Попробуйте еще раз.\n")
+        return None
+
     print("Заполняем базу данных найденной информацией...")
     params_db = read_config()
     dbmanager = DBManager(params_db)
     with dbmanager as dbm:
         if user_query.is_rewrite:
-            dbm.drop_database()
-        dbm.create_database()
+            dbm.drop_database(DEFAULT_DATABASE)
+        dbm.create_database(DEFAULT_DATABASE)
         dbm.create_tables()
 
         try:
@@ -44,19 +49,10 @@ def main():
         else:
             data_vac = dbm.refactor_vacancies_data(data_vac)
             dbm.add_data('vacancies', data_vac)
-
+        project_menu = ProjectMenu(dbm, user_query)
         try:
             while True:
-                menu = (
-                    ("Cписок всех компаний", get_companies, (dbm, user_query)),
-                    ("Cписок всех вакансий", get_all_vacancies, (dbm, user_query)),
-                    ("Cписок всех вакансий, у которых "
-                     "зарплата выше средней", get_vacancies_with_higher_salary, (dbm, user_query)),
-                    ("Cписок всех вакансий, в названии "
-                     "которых cодержатся ключевые слова", get_vacancies_with_keyword, (dbm, user_query)),
-                    ("Выйти в предыдущее меню", user_query.raise_back_menu)
-                )
-                user_query.print_menu(menu)
+                project_menu.main_menu()
         except BackMenuException:
             pass
 

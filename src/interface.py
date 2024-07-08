@@ -17,10 +17,10 @@ class UserQuery:
     def __init__(self):
         print("Поиск вакансий. Для выхода из программы в любой момент введите: /exit")
 
-        self.__top_n = self.input_top_n()
-        self.__filter_words = self.input_filter_words()
-        self.__is_rewrite = self.input_is_rewrite()
-        self.__keywords = None
+        self.__top_n: int = self.input_top_n()
+        self.__filter_words: list[str] = self.input_filter_words()
+        self.__is_rewrite: bool = self.input_is_rewrite()
+        self.__keywords: list[str] | None = None
 
         self.remember_query()
 
@@ -43,7 +43,7 @@ class UserQuery:
     @classmethod
     def input_processing(cls, message, key) -> str:
         """
-        при каждом вводе данных, выводим подсказку если есть данные предыдущего запроса
+        При каждом вводе данных, выводим подсказку если есть данные предыдущего запроса
         и отслеживаем команду выхода из программы
         """
         print(message)
@@ -56,9 +56,7 @@ class UserQuery:
         return user_input
 
     def remember_query(self) -> None:
-        """
-        запомним данные пользовательского запроса
-        """
+        """ Запомним данные пользовательского запроса """
         list_ = [x.replace('_UserQuery__', '') for x in self.__dict__ if not callable(x)]
         for x in list_:
             self.last_user_query[x] = getattr(self, x)
@@ -82,6 +80,7 @@ class UserQuery:
         return int(top_n)
 
     def input_items(self, text: str, key: str) -> list:
+        """Для получения от пользователя списка параметров"""
         items = []
         while not (len(items) > 0):
             items = self.input_processing(text, key).lower().split()
@@ -123,30 +122,3 @@ class UserQuery:
 
         return range_id
 
-    @staticmethod
-    def raise_exit():
-        raise ExitException
-
-    @staticmethod
-    def raise_back_menu():
-        raise BackMenuException
-
-    @staticmethod
-    def print_menu(menu: tuple):
-        print()
-        print("Выберите необходимый пункт меню:")
-        len_menu = len(menu)
-        for index, item in enumerate(menu):
-            print(f'{index + 1}. {item[0]}')
-        while True:
-            user_input = input().strip().lower()
-            if user_input.isdigit() and 0 < int(user_input) <= len_menu:
-                break
-            elif user_input == '/exit':
-                raise ExitException
-            else:
-                print(f"Введите число от 1 до {len_menu}. '/exit' - для выхода")
-        if len(menu[int(user_input) - 1]) > 2:
-            menu[int(user_input) - 1][1](*menu[int(user_input) - 1][2])
-        else:
-            menu[int(user_input) - 1][1]()
