@@ -57,6 +57,7 @@ class ProjectMenu(SuperMenu):
     def main_menu(self):
         """
         Главное меню
+        ______________________
         """
         menu = (
             ("Cписок всех компаний", self.get_companies),
