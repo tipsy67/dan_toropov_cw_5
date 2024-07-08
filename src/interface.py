@@ -17,10 +17,10 @@ class UserQuery:
     def __init__(self):
         print("Поиск вакансий. Для выхода из программы в любой момент введите: /exit")
 
-        self.__top_n = self.input_top_n()
-        self.__filter_words = self.input_filter_words()
-        self.__is_rewrite = self.input_is_rewrite()
-        self.__keywords = None
+        self.__top_n: int = self.input_top_n()
+        self.__filter_words: list[str] = self.input_filter_words()
+        self.__is_rewrite: bool = self.input_is_rewrite()
+        self.__keywords: list[str] | None = None
 
         self.remember_query()
 
@@ -122,35 +122,3 @@ class UserQuery:
 
         return range_id
 
-    @staticmethod
-    def raise_exit():
-        raise ExitException
-
-    @staticmethod
-    def raise_back_menu():
-        raise BackMenuException
-
-    @staticmethod
-    def print_menu(menu: tuple):
-        """
-        Для вывода меню на экран и обработки выбора пользователя
-        menu: Кортеж из кортежей вида
-        (текст пункта меню, ссылка на вызываемую функцию, позиционные аргументы для функции)
-        """
-        print()
-        print("Выберите необходимый пункт меню:")
-        len_menu = len(menu)
-        for index, item in enumerate(menu):
-            print(f'{index + 1}. {item[0]}')
-        while True:
-            user_input = input().strip().lower()
-            if user_input.isdigit() and 0 < int(user_input) <= len_menu:
-                break
-            elif user_input == '/exit':
-                raise ExitException
-            else:
-                print(f"Введите число от 1 до {len_menu}. '/exit' - для выхода")
-        if len(menu[int(user_input) - 1]) > 2:
-            menu[int(user_input) - 1][1](*menu[int(user_input) - 1][2])
-        else:
-            menu[int(user_input) - 1][1]()
