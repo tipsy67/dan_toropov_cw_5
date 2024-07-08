@@ -99,4 +99,5 @@ class Currency:
         currency = currency.lower()
         if currency == 'byr':
             currency = 'byn'
+
         return cls.currency_rate['rub'].get(currency, 1)
