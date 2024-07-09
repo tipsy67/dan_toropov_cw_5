@@ -5,7 +5,7 @@ from src.dbmanager import DBManager
 from src.exceptions import ExitException, BackMenuException
 from src.interface import UserQuery
 from src.menu import ProjectMenu
-from src.settings import URL_EMPLOYERS, URL_CURRENCY, DEFAULT_DATABASE
+from src.settings import URL_EMPLOYERS, URL_CURRENCY, DEFAULT_DATABASE, PATH_TO_EXCEL
 from src.utils import read_config
 
 
@@ -64,3 +64,4 @@ if __name__ == '__main__':
             main()
     except ExitException:
         print("Работа завершена.")
+

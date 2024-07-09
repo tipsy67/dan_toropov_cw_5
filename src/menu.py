@@ -1,6 +1,9 @@
+import pandas
+
 from src.dbmanager import DBManager
 from src.exceptions import BackMenuException, ExitException
 from src.interface import UserQuery
+from src.settings import PATH_TO_EXCEL
 
 
 class SuperMenu:
@@ -23,7 +26,7 @@ class SuperMenu:
         menu: Кортеж из кортежей вида
         (текст пункта меню, ссылка на вызываемую функцию, позиционные аргументы для функции)
         """
-        print()
+        print('')
         print("Выберите необходимый пункт меню:")
         len_menu = len(menu)
         for index, item in enumerate(menu):
@@ -37,7 +40,12 @@ class SuperMenu:
             else:
                 print(f"Введите число от 1 до {len_menu}. '/exit' - для выхода")
         if len(menu[int(user_input) - 1]) > 2:
-            menu[int(user_input) - 1][1](*menu[int(user_input) - 1][2])
+            args_ = menu[int(user_input) - 1][2]
+            if isinstance(args_, tuple):
+                menu[int(user_input) - 1][1](*args_)
+            else:
+                print(args_)
+                menu[int(user_input) - 1][1](args_)
         else:
             menu[int(user_input) - 1][1]()
 
@@ -54,6 +62,15 @@ class ProjectMenu(SuperMenu):
         self.dbm = dbm
         self.user_query = user_query
 
+    def raise_exit(self):
+        all_vacancies = self.dbm.get_all_vacancies(True)
+        df = pandas.DataFrame(all_vacancies)
+        df.to_excel(PATH_TO_EXCEL)
+        print(f"\nРезультат сохранен в файл {PATH_TO_EXCEL}")
+
+        super().raise_exit()
+
+
     def main_menu(self):
         """
         Главное меню
@@ -61,7 +78,7 @@ class ProjectMenu(SuperMenu):
         """
         menu = (
             ("Cписок всех компаний", self.get_companies),
-            ("Cписок всех вакансий", self.get_all_vacancies),
+            ("Cписок всех вакансий", self.get_all_vacancies, False),
             ("Cписок всех вакансий, у которых "
              "зарплата выше средней", self.get_vacancies_with_higher_salary),
             ("Cписок всех вакансий, в названии "
@@ -109,7 +126,7 @@ class ProjectMenu(SuperMenu):
         list_words = self.user_query.input_words_for_del()
         self.dbm.del_by_words('employers', 'name', list_words)
 
-    def get_all_vacancies(self):
+    def get_all_vacancies(self, key):
         """
         Пункт меню 2
         ______________________
@@ -123,7 +140,7 @@ class ProjectMenu(SuperMenu):
         )
         try:
             while True:
-                self.dbm.get_all_vacancies()
+                self.dbm.get_all_vacancies(key)
                 self.print_menu(menu_2)
         except BackMenuException:
             pass

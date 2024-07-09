@@ -95,7 +95,7 @@ class UserQuery:
 
         return filter_words
 
-    def input_id_for_del(self) -> list[int]:
+    def input_id_for_del(self) -> list[str]:
         id_for_del = []
         while not (len(id_for_del) > 0):
             id_for_del = self.input_items("Введите через пробел"

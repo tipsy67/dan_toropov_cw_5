@@ -161,7 +161,7 @@ def test_get_companies_and_vacancies_count(capsys, dbm_test_data):
 
 
 def test_get_all_vacancies(capsys, dbm_test_data):
-    dbm_test_data.get_all_vacancies()
+    dbm_test_data.get_all_vacancies(False)
 
     captured = capsys.readouterr()
     str_ = ("\n"

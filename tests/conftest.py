@@ -2,6 +2,7 @@ import pytest
 
 from src.api import HeadHunterAPI, Currency
 from src.dbmanager import DBManager
+from src.interface import UserQuery
 from src.settings import URL_EMPLOYERS
 from src.utils import read_config
 
@@ -127,3 +128,13 @@ def test_data_employers():
              'vacancies_url': 'https://api.hh.ru/vacancies?employer_id=1199213'}]
 
 
+@pytest.fixture
+def test_user_query():
+    user_query = UserQuery.__new__(UserQuery)
+    print(user_query.__dict__)
+    user_query._UserQuery__top_n = 1
+    user_query._UserQuery__filter_words = ['test']
+    user_query._UserQuery__is_rewrite = False
+    user_query._UserQuery__keywords = None
+
+    return user_query

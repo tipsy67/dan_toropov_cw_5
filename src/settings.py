@@ -4,6 +4,7 @@ SEARCH_PER_PAGE = 100  # 100
 SEARCH_PAGE = 20  # 20
 
 PATH = Path(__file__).parent
+PATH_TO_EXCEL = PATH.parent.joinpath('report.xlsx')
 
 URL_VACANCIES = 'https://api.hh.ru/vacancies'
 URL_EMPLOYERS = 'https://api.hh.ru/employers'
