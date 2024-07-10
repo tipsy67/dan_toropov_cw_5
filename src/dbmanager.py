@@ -146,7 +146,7 @@ class DBManager(SuperDBManager):
         title = ('id', 'name', 'open_vacancies', 'url', 'vacancies_in_base')
         self.select_and_print(query, title)
 
-    def get_all_vacancies(self):
+    def get_all_vacancies(self, is_return: bool):
         """Получаем список всех вакансий с указанием названия
         компании, названия вакансии и зарплаты и ссылки на вакансию."""
         query = ("SELECT v.id, e.name, v.name, v.salary_min, v.salary_max, v.url "
@@ -155,7 +155,10 @@ class DBManager(SuperDBManager):
                  "ON e.id = v.employer_id "
                  "ORDER BY v.id")
         title = ('id', 'company', 'vacancy', 'salary_min', 'salary_max', 'url')
-        self.select_and_print(query, title)
+        if not is_return:
+            self.select_and_print(query, title)
+        else:
+            return self.query_and_return(query)
 
     def get_avg_salary(self) -> int | float:
         """Получаем среднюю зарплату по вакансиям"""
